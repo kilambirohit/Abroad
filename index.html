@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abroad Study Expenses</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background-color: #f4f4f4;
+        }
+        #expense-form { 
+            margin-bottom: 20px; 
+            padding: 10px; 
+            background-color: #fff; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        #expense-form input, 
+        #expense-form select, 
+        #expense-form button { 
+            margin: 5px 0; 
+            padding: 10px; 
+            width: 100%; 
+            box-sizing: border-box; 
+        }
+        #expense-form button { 
+            background-color: #28a745; 
+            color: #fff; 
+            border: none; 
+            cursor: pointer; 
+            transition: background-color 0.3s ease;
+        }
+        #expense-form button:hover { 
+            background-color: #218838; 
+        }
+        #expense-list { 
+            list-style-type: none; 
+            padding: 0; 
+        }
+        #expense-list li { 
+            margin: 10px 0; 
+            padding: 10px; 
+            background-color: #fff; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        #expense-list li button { 
+            margin: 5px 5px 0 0; 
+            padding: 5px 10px; 
+            border: none; 
+            cursor: pointer; 
+            transition: background-color 0.3s ease;
+        }
+        #expense-list li .mark-button { 
+            background-color: #007bff; 
+            color: #fff; 
+        }
+        #expense-list li .mark-button:hover { 
+            background-color: #0056b3; 
+        }
+        #expense-list li .delete-button { 
+            background-color: #dc3545; 
+            color: #fff; 
+        }
+        #expense-list li .delete-button:hover { 
+            background-color: #c82333; 
+        }
+        @media (max-width: 600px) {
+            #expense-form {
+                padding: 5px;
+            }
+            #expense-form input, 
+            #expense-form select, 
+            #expense-form button { 
+                padding: 8px; 
+            }
+            #expense-list li { 
+                flex-direction: column; 
+                align-items: flex-start;
+            }
+            #expense-list li button {
+                width: 100%;
+                margin-top: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Abroad Study Expenses</h1>
+    <form id="expense-form">
+        <input type="text" id="item" placeholder="Item" required>
+        <input type="number" id="amount" placeholder="Amount" required>
+        <select id="category" required>
+            <option value="Shopping">Shopping</option>
+            <option value="University Fees">University Fees</option>
+            <option value="Accommodation Fees">Accommodation Fees</option>
+            <option value="Air Ticket">Air Ticket</option>
+            <option value="General Expenses">General Expenses</option>
+        </select>
+        <button type="submit">Add Expense</button>
+    </form>
+    <ul id="expense-list"></ul>
+
+    <script>
+        function getExpenses() {
+            return JSON.parse(localStorage.getItem('expenses')) || [];
+        }
+
+        function saveExpenses(expenses) {
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+        }
+
+        function renderExpenses() {
+            const expenses = getExpenses();
+            const expenseList = document.getElementById('expense-list');
+            expenseList.innerHTML = '';
+            expenses.forEach((expense, index) => {
+                const li = document.createElement('li');
+                li.textContent = `${expense.item} - ${expense.amount} - ${expense.category}`;
+                if (expense.category === 'University Fees' || expense.category === 'Accommodation Fees') {
+                    const paidButton = document.createElement('button');
+                    paidButton.textContent = expense.paid ? 'Paid' : 'Mark as Paid';
+                    paidButton.className = 'mark-button';
+                    paidButton.addEventListener('click', () => {
+                        expenses[index].paid = !expenses[index].paid;
+                        saveExpenses(expenses);
+                        renderExpenses();
+                    });
+                    li.appendChild(paidButton);
+                } else if (expense.category === 'Air Ticket' || expense.category === 'Shopping' || expense.category === 'General Expenses') {
+                    const boughtButton = document.createElement('button');
+                    boughtButton.textContent = expense.paid ? 'Bought' : 'Mark as Bought';
+                    boughtButton.className = 'mark-button';
+                    boughtButton.addEventListener('click', () => {
+                        expenses[index].paid = !expenses[index].paid;
+                        saveExpenses(expenses);
+                        renderExpenses();
+                    });
+                    li.appendChild(boughtButton);
+                }
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.className = 'delete-button';
+                deleteButton.addEventListener('click', () => {
+                    expenses.splice(index, 1);
+                    saveExpenses(expenses);
+                    renderExpenses();
+                });
+                li.appendChild(deleteButton);
+                expenseList.appendChild(li);
+            });
+        }
+
+        document.getElementById('expense-form').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const item = document.getElementById('item').value;
+            const amount = document.getElementById('amount').value;
+            const category = document.getElementById('category').value;
+            const expenses = getExpenses();
+            expenses.push({ item, amount, category, paid: false });
+            saveExpenses(expenses);
+            renderExpenses();
+            document.getElementById('expense-form').reset();
+        });
+
+        renderExpenses();
+    </script>
+</body>
+</html>
