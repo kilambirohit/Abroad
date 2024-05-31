@@ -20,7 +20,8 @@
         }
         #expense-form input, 
         #expense-form select, 
-        #expense-form button { 
+        #expense-form button, 
+        #expense-form textarea { 
             margin: 5px 0; 
             padding: 10px; 
             width: 100%; 
@@ -79,7 +80,8 @@
             }
             #expense-form input, 
             #expense-form select, 
-            #expense-form button { 
+            #expense-form button, 
+            #expense-form textarea { 
                 padding: 8px; 
             }
             #expense-list li { 
@@ -103,8 +105,10 @@
             <option value="University Fees">University Fees</option>
             <option value="Accommodation Fees">Accommodation Fees</option>
             <option value="Air Ticket">Air Ticket</option>
+            <option value="Coaching Fee">Coaching Fee</option>
             <option value="General Expenses">General Expenses</option>
         </select>
+        <textarea id="notes" placeholder="Notes (for Coaching Fee)" style="display: none;"></textarea>
         <button type="submit">Add Expense</button>
     </form>
     <ul id="expense-list"></ul>
@@ -124,8 +128,12 @@
             expenseList.innerHTML = '';
             expenses.forEach((expense, index) => {
                 const li = document.createElement('li');
-                li.textContent = `${expense.item} - ${expense.amount} - ${expense.category}`;
-                if (expense.category === 'University Fees' || expense.category === 'Accommodation Fees') {
+                let textContent = `${expense.item} - ${expense.amount} - ${expense.category}`;
+                if (expense.notes) {
+                    textContent += ` - ${expense.notes}`;
+                }
+                li.textContent = textContent;
+                if (expense.category === 'University Fees' || expense.category === 'Accommodation Fees' || expense.category === 'Coaching Fee' || expense.category === 'General Expenses') {
                     const paidButton = document.createElement('button');
                     paidButton.textContent = expense.paid ? 'Paid' : 'Mark as Paid';
                     paidButton.className = 'mark-button';
@@ -135,7 +143,7 @@
                         renderExpenses();
                     });
                     li.appendChild(paidButton);
-                } else if (expense.category === 'Air Ticket' || expense.category === 'Shopping' || expense.category === 'General Expenses') {
+                } else if (expense.category === 'Air Ticket' || expense.category === 'Shopping') {
                     const boughtButton = document.createElement('button');
                     boughtButton.textContent = expense.paid ? 'Bought' : 'Mark as Bought';
                     boughtButton.className = 'mark-button';
@@ -159,16 +167,31 @@
             });
         }
 
+        document.getElementById('category').addEventListener('change', (event) => {
+            const notes = document.getElementById('notes');
+            if (event.target.value === 'Coaching Fee') {
+                notes.style.display = 'block';
+            } else {
+                notes.style.display = 'none';
+            }
+        });
+
         document.getElementById('expense-form').addEventListener('submit', (event) => {
             event.preventDefault();
             const item = document.getElementById('item').value;
             const amount = document.getElementById('amount').value;
             const category = document.getElementById('category').value;
+            const notes = document.getElementById('notes').value;
             const expenses = getExpenses();
-            expenses.push({ item, amount, category, paid: false });
+            const expense = { item, amount, category, paid: false };
+            if (category === 'Coaching Fee' && notes) {
+                expense.notes = notes;
+            }
+            expenses.push(expense);
             saveExpenses(expenses);
             renderExpenses();
             document.getElementById('expense-form').reset();
+            document.getElementById('notes').style.display = 'none';
         });
 
         renderExpenses();
